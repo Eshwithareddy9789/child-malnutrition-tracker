@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Children's UIDs - Machanic HUB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-area {
+            position: absolute;
+            top: 20px;
+            right: 120px;
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+        .search-area input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 180px;
+            font-size: 14px;
+        }
+        .search-area button {
+            padding: 8px 15px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .search-area button:hover {
+            background: #1557b0;
+        }
+        .search-message {
+            color: #dc3545;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 16px;
+            display: none;
+        }
+
+        h1 {
+            color: #1a73e8;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .children-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .children-table th,
+        .children-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .children-table th {
+            background-color: #f8f9fa;
+            color: #1a73e8;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .children-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .children-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .view-status-btn {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .view-status-btn:hover {
+            background-color: #1557b0;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .uid-cell {
+            color: #1a73e8;
+            font-weight: 500;
+        }
+
+        .blood-group {
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: #e8f0fe;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+            .search-area {
+                position: static;
+                margin-bottom: 10px;
+                justify-content: center;
+            }
+            .children-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            .children-table th,
+            .children-table td {
+                padding: 12px;
+            }
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            color: #1a73e8;
+            font-weight: bold;
+            background: #f8f9fa;
+            border: none;
+            outline: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        .tab.active {
+            background: #1a73e8;
+            color: #fff;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .chart-container {
+            width: 100%;
+            max-width: 700px;
+            margin: 30px auto 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            padding: 30px 20px;
+        }
+
+        .action-buttons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #1557b0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .action-buttons {
+                position: static;
+                margin: 10px 0;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .search-area {
+                position: static;
+                margin: 10px 0;
+                justify-content: center;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="search-area">
+        <input type="text" id="uidSearchInput" placeholder="Search by UID (e.g. CH001)">
+        <button onclick="searchUID()">Search</button>
+    </div>
+    <div class="action-buttons">
+        <button class="action-btn" onclick="window.location.href='medication.html'">Medication</button>
+        <button class="action-btn" onclick="window.location.href='monitor.html'">Monitor</button>
+        <button class="action-btn" onclick="window.location.href='reports.html'">Reports</button>
+    </div>
+    <div class="container">
+        <h1>Children's UIDs</h1>
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('table')">Table View</button>
+            <button class="tab" onclick="showTab('graph')">Graph View</button>
+            <button class="tab" onclick="showTab('pie')">Pie Chart View</button>
+        </div>
+        <div class="tab-content active" id="tableTab">
+            <div class="search-message" id="searchMessage">No child found with this UID.</div>
+            <table class="children-table" id="childrenTable">
+                <thead>
+                    <tr>
+                        <th>UID</th>
+                        <th>Name</th>
+                        <th>Height (cm)</th>
+                        <th>Weight (kg)</th>
+                        <th>Blood Group</th>
+                        <th>Problem</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+            <!-- Edit Modal for Diet and Messages -->
+            <div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1000; justify-content:center; align-items:center;">
+                <div style="background:white; border-radius:10px; max-width:400px; width:90%; padding:30px 20px; box-shadow:0 8px 32px rgba(0,0,0,0.2); position:relative; animation:fadeIn 0.3s;">
+                    <button onclick="closeEditModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:22px; color:#888; cursor:pointer;">&times;</button>
+                    <h3 style="color:#006B54; text-align:center; margin-bottom:18px;">Edit Diet & Messages</h3>
+                    <form id="editForm" onsubmit="return saveEdit(event)">
+                        <input type="hidden" id="editUid">
+                        <div style="margin-bottom:12px;"><b id="editName"></b></div>
+                        <label for="editDiet">Diet</label>
+                        <textarea id="editDiet" rows="2" style="width:100%; margin-bottom:12px;"></textarea>
+                        <label for="editMessages">Messages</label>
+                        <textarea id="editMessages" rows="2" style="width:100%; margin-bottom:18px;"></textarea>
+                        <button type="submit" style="background:#1a73e8; color:#fff; border:none; padding:10px 20px; border-radius:5px; font-size:15px; font-weight:bold; cursor:pointer;">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="tab-content" id="graphTab">
+            <div class="chart-container">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+        <div class="tab-content" id="pieTab">
+            <div class="chart-container">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Helper: get patients from localStorage or default
+        function getPatients() {
+            const data = localStorage.getItem('patients');
+            if (data) return JSON.parse(data);
+            return [
+                { uid: 'CH001', name: 'Aanya Mehra', height: 112, weight: 20, blood: 'B+', problem: '' },
+                { uid: 'CH002', name: 'Aarav Singh', height: 118, weight: 22, blood: 'O+', problem: '' },
+                { uid: 'CH003', name: 'Isha Patel', height: 105, weight: 18, blood: 'A-', problem: '' },
+                { uid: 'CH004', name: 'Kabir Khan', height: 115, weight: 21, blood: 'AB+', problem: '' },
+                { uid: 'CH005', name: 'Riya Das', height: 110, weight: 19, blood: 'O-', problem: '' }
+            ];
+        }
+        let patients = getPatients();
+        function renderTable(filterUid = '') {
+            const tbody = document.querySelector('#childrenTable tbody');
+            tbody.innerHTML = '';
+            let found = false;
+            patients.forEach((p, idx) => {
+                if (!filterUid || p.uid.toUpperCase() === filterUid.toUpperCase()) {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="uid-cell">${p.uid}</td>
+                            <td>${p.name}</td>
+                            <td>${p.height}</td>
+                            <td>${p.weight}</td>
+                            <td><span class='blood-group'>${p.blood}</span></td>
+                            <td>${p.problem ? p.problem : '<span style=\'color:#888\'>-</span>'}</td>
+                            <td>
+                                <button class="view-status-btn" onclick="viewStatus('${p.uid}')">View Status</button>
+                                <button class="view-status-btn" style="background:#34a853; margin-left:6px;" onclick="openEditModal(${idx})">Edit</button>
+                            </td>
+                        </tr>
+                    `;
+                    found = true;
+                }
+            });
+            const msg = document.getElementById('searchMessage');
+            if (filterUid && !found) {
+                msg.style.display = 'block';
+            } else {
+                msg.style.display = 'none';
+            }
+        }
+        function viewStatus(uid) {
+            alert(`Viewing status for child with UID: ${uid}`);
+        }
+        function logout() {
+            window.location.href = 'login.html';
+        }
+        function searchUID() {
+            const input = document.getElementById('uidSearchInput').value.trim().toUpperCase();
+            renderTable(input);
+        }
+        // Allow pressing Enter to search
+        document.getElementById('uidSearchInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                searchUID();
+            }
+        });
+        // Initial render
+        renderTable();
+
+        // Tab switching
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            if (tab === 'table') {
+                document.querySelector('.tab:nth-child(1)').classList.add('active');
+                document.getElementById('tableTab').classList.add('active');
+            } else if (tab === 'graph') {
+                document.querySelector('.tab:nth-child(2)').classList.add('active');
+                document.getElementById('graphTab').classList.add('active');
+                renderBarChart();
+            } else if (tab === 'pie') {
+                document.querySelector('.tab:nth-child(3)').classList.add('active');
+                document.getElementById('pieTab').classList.add('active');
+                renderPieChart();
+            }
+        }
+
+        // Chart.js graphs
+        let barChartInstance = null;
+        let pieChartInstance = null;
+        function renderBarChart() {
+            const ctx = document.getElementById('barChart').getContext('2d');
+            if (barChartInstance) barChartInstance.destroy();
+            const labels = patients.map(p => p.name + ' (' + p.uid + ')');
+            const heights = patients.map(p => p.height);
+            const weights = patients.map(p => p.weight);
+            barChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Height (cm)',
+                            data: heights,
+                            backgroundColor: 'rgba(26, 115, 232, 0.7)'
+                        },
+                        {
+                            label: 'Weight (kg)',
+                            data: weights,
+                            backgroundColor: 'rgba(0, 107, 84, 0.7)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Height and Weight of Children' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+        function renderPieChart() {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            if (pieChartInstance) pieChartInstance.destroy();
+            // Count blood groups
+            const bloodCounts = {};
+            patients.forEach(p => {
+                bloodCounts[p.blood] = (bloodCounts[p.blood] || 0) + 1;
+            });
+            pieChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(bloodCounts),
+                    datasets: [{
+                        data: Object.values(bloodCounts),
+                        backgroundColor: [
+                            '#1a73e8', '#006B54', '#fbbc05', '#ea4335', '#34a853', '#ff7043', '#ab47bc', '#29b6f6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Blood Group Distribution' }
+                    }
+                }
+            });
+        }
+        function openEditModal(idx) {
+            const p = patients[idx];
+            document.getElementById('editUid').value = p.uid;
+            document.getElementById('editName').textContent = p.name + ' (' + p.uid + ')';
+            document.getElementById('editDiet').value = p.diet || '';
+            document.getElementById('editMessages').value = p.messages || '';
+            document.getElementById('editModal').style.display = 'flex';
+        }
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+        function saveEdit(e) {
+            e.preventDefault();
+            const uid = document.getElementById('editUid').value;
+            const diet = document.getElementById('editDiet').value;
+            const messages = document.getElementById('editMessages').value;
+            const idx = patients.findIndex(p => p.uid === uid);
+            if (idx !== -1) {
+                patients[idx].diet = diet;
+                patients[idx].messages = messages;
+                localStorage.setItem('patients', JSON.stringify(patients));
+                renderTable();
+                closeEditModal();
+            }
+            return false;
+        }
+    </script>
+</body>
+</html> 

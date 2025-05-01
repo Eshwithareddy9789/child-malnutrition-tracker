@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes zoomBackground {
+            0% { background-size: 100%; }
+            50% { background-size: 110%; }
+            100% { background-size: 100%; }
+        }
+
+        body {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            background-image: url('https://raw.githubusercontent.com/SumukhBharadwajKS/child/main/logo.png.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            animation: zoomBackground 10s ease-in-out infinite;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                45deg,
+                rgba(0, 0, 0, 0.6),
+                rgba(0, 107, 84, 0.7)
+            );
+            z-index: 1;
+            animation: gradientBG 15s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        .patient-search {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3;
+            display: flex;
+            gap: 10px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .search-box {
+            display: none;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease;
+        }
+
+        .search-box.active {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .search-box input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: #006B54;
+            box-shadow: 0 0 0 2px rgba(0, 107, 84, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .search-box button {
+            padding: 8px 15px;
+            background: #006B54;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .search-box button:hover {
+            background: #005543;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 107, 84, 0.3);
+        }
+
+        .status-btn {
+            padding: 10px 20px;
+            background: #006B54;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .status-btn:hover {
+            background: #005543;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 107, 84, 0.4);
+        }
+
+        .page-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            transform-origin: center;
+            animation: fadeIn 0.8s ease-out;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .login-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: #f5f5f5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 107, 84, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .tab:hover::before {
+            transform: translateX(0);
+        }
+
+        .tab.active {
+            background: #006B54;
+            color: white;
+            animation: pulse 0.3s ease;
+        }
+
+        .login-form {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .login-form.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #006B54;
+            box-shadow: 0 0 0 3px rgba(0, 107, 84, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #006B54;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%) rotate(35deg) scale(0);
+            transition: transform 0.5s ease;
+        }
+
+        .login-btn:hover {
+            background: #005543;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 107, 84, 0.2);
+        }
+
+        .login-btn:hover::after {
+            transform: translate(-50%, -50%) rotate(35deg) scale(1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #006B54;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .header h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .header:hover p {
+            opacity: 1;
+        }
+
+        .error-message {
+            color: #ff0000;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+            animation: shake 0.3s ease-in-out;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            background: #006B54;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 120px;
+        }
+
+        .action-btn:hover {
+            background: #005543;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 107, 84, 0.4);
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                width: 100%;
+                margin: 10px;
+            }
+            .patient-search {
+                top: 10px;
+                right: 10px;
+            }
+            .search-box input {
+                width: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="patient-search">
+        <button class="status-btn" onclick="toggleSearch()">Patient Status</button>
+        <div class="search-box" id="searchBox">
+            <input type="text" placeholder="Enter UID Number" id="uidInput">
+            <button onclick="searchPatient()">Search</button>
+        </div>
+    </div>
+
+    <!-- Modal for patient info -->
+    <div id="patientModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:white; border-radius:10px; max-width:350px; width:90%; padding:30px 20px; box-shadow:0 8px 32px rgba(0,0,0,0.2); position:relative; animation:fadeIn 0.3s;">
+            <button onclick="closePatientModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:22px; color:#888; cursor:pointer;">×</button>
+            <div id="patientModalContent"></div>
+        </div>
+    </div>
+
+    <div class="page-content">
+        <div class="login-container">
+            <img src="https://raw.githubusercontent.com/SumukhBharadwajKS/child/main/logo.png.jpg" alt="Logo" style="display:block;margin:0 auto 15px auto;max-width:120px;width:100%;height:auto;">
+            <div class="header">
+                <h2>Child Malnutrition Tracking System</h2>
+                <p>Every Child Deserves A Healthy Start</p>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('caretaker')">Caretaker</div>
+                <div class="tab" onclick="switchTab('doctor')">Doctor</div>
+                <div class="tab" onclick="switchTab('child')">Child</div>
+            </div>
+
+            <!-- Caretaker Login Form -->
+            <form id="caretaker-form" class="login-form active" onsubmit="return validateForm('caretaker')">
+                <div class="form-group">
+                    <label for="caretaker-email">Email</label>
+                    <input type="email" id="caretaker-email" required>
+                    <div class="error-message" id="caretaker-email-error">Please enter a valid email</div>
+                </div>
+                <div class="form-group">
+                    <label for="caretaker-password">Password</label>
+                    <input type="password" id="caretaker-password" required>
+                    <div class="error-message" id="caretaker-password-error">Please enter your password</div>
+                </div>
+                <button type="submit" class="login-btn">Login as Caretaker</button>
+            </form>
+
+            <!-- Caretaker Dashboard (hidden by default) -->
+            <div id="caretaker-dashboard" class="login-form" style="display: none;">
+                <div class="header">
+                    <h2>Caretaker Dashboard</h2>
+                    <p>Welcome to your dashboard</p>
+                </div>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 20px;">
+                    <button type="button" class="action-btn" onclick="window.location.href='medication.html'">
+                        <i class="fas fa-pills"></i>
+                        Medication
+                    </button>
+                    <button type="button" class="action-btn" onclick="window.location.href='monitor.html'">
+                        <i class="fas fa-heartbeat"></i>
+                        Monitor
+                    </button>
+                    <button type="button" class="action-btn" onclick="window.location.href='reports.html'">
+                        <i class="fas fa-chart-bar"></i>
+                        Reports
+                    </button>
+                </div>
+                <button type="button" class="logout-btn" onclick="logout()" style="margin-top: 20px;">Logout</button>
+            </div>
+
+            <!-- Doctor Login Form -->
+            <form id="doctor-form" class="login-form" onsubmit="return validateForm('doctor')">
+                <div class="form-group">
+                    <label for="doctor-email">Email</label>
+                    <input type="email" id="doctor-email" required>
+                    <div class="error-message" id="doctor-email-error">Please enter a valid email</div>
+                </div>
+                <div class="form-group">
+                    <label for="doctor-password">Password</label>
+                    <input type="password" id="doctor-password" required>
+                    <div class="error-message" id="doctor-password-error">Please enter your password</div>
+                </div>
+                <button type="submit" class="login-btn">Login as Doctor</button>
+            </form>
+
+            <!-- Child Login Form -->
+            <form id="child-form" class="login-form" onsubmit="return validateForm('child')">
+                <div class="form-group">
+                    <label for="child-uid">UID</label>
+                    <input type="text" id="child-uid" required>
+                    <div class="error-message" id="child-uid-error">Please enter a valid UID</div>
+                </div>
+                <div class="form-group">
+                    <label for="child-password">Password</label>
+                    <input type="password" id="child-password" required>
+                    <div class="error-message" id="child-password-error">Please enter your password</div>
+                </div>
+                <button type="submit" class="login-btn">Login as Child</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(role) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            if (role === 'caretaker') document.querySelector('.tab:nth-child(1)').classList.add('active');
+            if (role === 'doctor') document.querySelector('.tab:nth-child(2)').classList.add('active');
+            if (role === 'child') document.querySelector('.tab:nth-child(3)').classList.add('active');
+            document.querySelectorAll('.login-form').forEach(form => {
+                form.classList.remove('active');
+                form.style.display = 'none';
+            });
+            const selectedForm = document.getElementById(`${role}-form`);
+            selectedForm.style.display = 'block';
+            setTimeout(() => selectedForm.classList.add('active'), 50);
+            document.querySelectorAll('.error-message').forEach(error => error.style.display = 'none');
+        }
+
+        function validateForm(role) {
+            if (role === 'child') {
+                const uid = document.getElementById('child-uid').value.trim().toUpperCase();
+                const password = document.getElementById('child-password').value;
+                document.getElementById('child-uid-error').style.display = 'none';
+                document.getElementById('child-password-error').style.display = 'none';
+                if (!uid) {
+                    document.getElementById('child-uid-error').style.display = 'block';
+                    return false;
+                }
+                if (!password) {
+                    document.getElementById('child-password-error').style.display = 'block';
+                    return false;
+                }
+                function getPatients() {
+                    const data = localStorage.getItem('patients');
+                    if (data) return JSON.parse(data);
+                    return [
+                        { uid: 'CH001', name: 'Aanya Mehra', height: 112, weight: 20, blood: 'B+', problem: '' },
+                        { uid: 'CH002', name: 'Aarav Singh', height: 118, weight: 22, blood: 'O+', problem: '' },
+                        { uid: 'CH003', name: 'Isha Patel', height: 105, weight: 18, blood: 'A-', problem: '' },
+                        { uid: 'CH004', name: 'Kabir Khan', height: 115, weight: 21, blood: 'AB+', problem: '' },
+                        { uid: 'CH005', name: 'Riya Das', height: 110, weight: 19, blood: 'O-', problem: '' }
+                    ];
+                }
+                const patients = getPatients();
+                const child = patients.find(p => p.uid.toUpperCase() === uid);
+                if (!child) {
+                    document.getElementById('child-uid-error').textContent = 'UID not found';
+                    document.getElementById('child-uid-error').style.display = 'block';
+                    return false;
+                }
+                if (password !== '1234') {
+                    document.getElementById('child-password-error').textContent = 'Incorrect password';
+                    document.getElementById('child-password-error').style.display = 'block';
+                    return false;
+                }
+                document.getElementById('patientModalContent').innerHTML = `
+                    <h3 style='color:#006B54; text-align:center; margin-bottom:18px;'>Your Information</h3>
+                    <table style='width:100%; font-size:16px;'>
+                        <tr><td style='font-weight:bold;'>UID:</td><td>${child.uid}</td></tr>
+                        <tr><td style='font-weight:bold;'>Name:</td><td>${child.name}</td></tr>
+                        <tr><td style='font-weight:bold;'>Height:</td><td>${child.height} cm</td></tr>
+                        <tr><td style='font-weight:bold;'>Weight:</td><td>${child.weight} kg</td></tr>
+                        <tr><td style='font-weight:bold;'>Blood Group:</td><td>${child.blood}</td></tr>
+                        <tr><td style='font-weight:bold;'>Problem:</td><td>${child.problem ? child.problem : '<span style=\'color:#888\'>-</span>'}</td></tr>
+                        <tr><td style='font-weight:bold;'>Diet:</td><td>${child.diet ? child.diet : '<span style=\'color:#888\'>-</span>'}</td></tr>
+                        <tr><td style='font-weight:bold;'>Messages:</td><td>${child.messages ? child.messages : '<span style=\'color:#888\'>-</span>'}</td></tr>
+                    </table>
+                `;
+                document.getElementById('patientModal').style.display = 'flex';
+                return false;
+            }
+            const email = document.getElementById(`${role}-email`).value;
+            const password = document.getElementById(`${role}-password`).value;
+            
+            document.querySelectorAll('.error-message').forEach(error => error.style.display = 'none');
+
+            if (!email || !email.includes('@')) {
+                const errorElement = document.getElementById(`${role}-email-error`);
+                errorElement.style.display = 'block';
+                errorElement.style.animation = 'none';
+                errorElement.offsetHeight;
+                errorElement.style.animation = null;
+                return false;
+            }
+
+            if (!password) {
+                const errorElement = document.getElementById(`${role}-password-error`);
+                errorElement.style.display = 'block';
+                errorElement.style.animation = 'none';
+                errorElement.offsetHeight;
+                errorElement.style.animation = null;
+                return false;
+            }
+
+            if (role === 'caretaker' && email === 'caretaker@gmail.com' && password === '1234') {
+                window.location.href = 'uids.html';
+                return false;
+            } else if (role === 'doctor' && email === 'doctor@gmail.com' && password === '1234') {
+                window.location.href = 'doctor_dashboard.html';
+                return false;
+            }
+            
+            alert('Invalid credentials. Please try again.');
+            return false;
+        }
+
+        function toggleSearch() {
+            const searchBox = document.getElementById('searchBox');
+            searchBox.classList.toggle('active');
+            if (searchBox.classList.contains('active')) {
+                document.getElementById('uidInput').focus();
+            }
+        }
+
+        function searchPatient() {
+            const uid = document.getElementById('uidInput').value.trim().toUpperCase();
+            function getPatients() {
+                const data = localStorage.getItem('patients');
+                if (data) return JSON.parse(data);
+                return [
+                    { uid: 'CH001', name: 'Aanya Mehra', height: 112, weight: 20, blood: 'B+', problem: '' },
+                    { uid: 'CH002', name: 'Aarav Singh', height: 118, weight: 22, blood: 'O+', problem: '' },
+                    { uid: 'CH003', name: 'Isha Patel', height: 105, weight: 18, blood: 'A-', problem: '' },
+                    { uid: 'CH004', name: 'Kabir Khan', height: 115, weight: 21, blood: 'AB+', problem: '' },
+                    { uid: 'CH005', name: 'Riya Das', height: 110, weight: 19, blood: 'O-', problem: '' }
+                ];
+            }
+            const patients = getPatients();
+            const child = patients.find(p => p.uid.toUpperCase() === uid);
+            if (uid && child) {
+                document.getElementById('patientModalContent').innerHTML = `
+                    <h3 style='color:#006B54; text-align:center; margin-bottom:18px;'>Patient Details</h3>
+                    <table style='width:100%; font-size:16px;'>
+                        <tr><td style='font-weight:bold;'>UID:</td><td>${child.uid}</td></tr>
+                        <tr><td style='font-weight:bold;'>Name:</td><td>${child.name}</td></tr>
+                        <tr><td style='font-weight:bold;'>Height:</td><td>${child.height} cm</td></tr>
+                        <tr><td style='font-weight:bold;'>Weight:</td><td>${child.weight} kg</td></tr>
+                        <tr><td style='font-weight:bold;'>Blood Group:</td><td>${child.blood}</td></tr>
+                        <tr><td style='font-weight:bold;'>Problem:</td><td>${child.problem ? child.problem : '<span style=\'color:#888\'>-</span>'}</td></tr>
+                    </table>
+                `;
+                document.getElementById('patientModal').style.display = 'flex';
+            } else if (uid) {
+                document.getElementById('patientModalContent').innerHTML = `<div style='color:#dc3545; text-align:center; font-size:17px;'>No patient found with UID: <b>${uid}</b></div>`;
+                document.getElementById('patientModal').style.display = 'flex';
+            } else {
+                alert('Please enter a UID number');
+            }
+        }
+        function closePatientModal() {
+            document.getElementById('patientModal').style.display = 'none';
+        }
+
+        function logout() {
+            document.getElementById('caretaker-dashboard').style.display = 'none';
+            document.getElementById('caretaker-form').style.display = 'block';
+            document.getElementById('caretaker-email').value = '';
+            document.getElementById('caretaker-password').value = '';
+        }
+    </script>
+</body>
+</html>

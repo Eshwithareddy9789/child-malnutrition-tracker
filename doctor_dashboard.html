@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Machanic HUB</title>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 30px 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1a73e8;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
+        }
+        th {
+            background: #f8f9fa;
+            color: #1a73e8;
+            font-weight: bold;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .edit-btn {
+            background: #1a73e8;
+            color: #fff;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .edit-btn:hover {
+            background: #1557b0;
+        }
+        .blood-group {
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: #e8f0fe;
+            display: inline-block;
+        }
+        /* Modal styles */
+        #editModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.4);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        #editModal .modal-content {
+            background: #fff;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+            padding: 30px 20px 20px 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            position: relative;
+            animation: fadeIn 0.3s;
+        }
+        #editModal .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: #888;
+            cursor: pointer;
+        }
+        #editModal label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+        #editModal input, #editModal select, #editModal textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1.5px solid #ddd;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        #editModal textarea {
+            resize: vertical;
+        }
+        #editModal .save-btn {
+            background: #006B54;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        #editModal .save-btn:hover {
+            background: #005543;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            th, td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="container">
+        <h1>Doctor Dashboard</h1>
+        <table id="patientsTable">
+            <thead>
+                <tr>
+                    <th>UID</th>
+                    <th>Name</th>
+                    <th>Height (cm)</th>
+                    <th>Weight (kg)</th>
+                    <th>Blood Group</th>
+                    <th>Problem</th>
+                    <th>Diet</th>
+                    <th>Messages</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be populated by JS -->
+            </tbody>
+        </table>
+    </div>
+    <!-- Edit Modal -->
+    <div id="editModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeEditModal()">&times;</button>
+            <h3 style="color:#006B54; text-align:center; margin-bottom:18px;">Edit Patient Info</h3>
+            <form id="editForm" onsubmit="return saveEdit(event)">
+                <input type="hidden" id="editUid">
+                <label for="editName">Name</label>
+                <input type="text" id="editName" required>
+                <label for="editHeight">Height (cm)</label>
+                <input type="number" id="editHeight" min="0" required>
+                <label for="editWeight">Weight (kg)</label>
+                <input type="number" id="editWeight" min="0" required>
+                <label for="editBlood">Blood Group</label>
+                <select id="editBlood" required>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                </select>
+                <label for="editProblem">Problem</label>
+                <textarea id="editProblem" rows="3" placeholder="Describe the patient's problem..."></textarea>
+                <label for="editDiet">Diet</label>
+                <textarea id="editDiet" rows="2" placeholder="Enter diet..."></textarea>
+                <label for="editMessages">Messages</label>
+                <textarea id="editMessages" rows="2" placeholder="Enter messages..."></textarea>
+                <button type="submit" class="save-btn">Save</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Helper: get patients from localStorage or default
+        function getPatients() {
+            const data = localStorage.getItem('patients');
+            if (data) return JSON.parse(data);
+            return [
+                { uid: 'CH001', name: 'Aanya Mehra', height: 112, weight: 20, blood: 'B+', problem: '' },
+                { uid: 'CH002', name: 'Aarav Singh', height: 118, weight: 22, blood: 'O+', problem: '' },
+                { uid: 'CH003', name: 'Isha Patel', height: 105, weight: 18, blood: 'A-', problem: '' },
+                { uid: 'CH004', name: 'Kabir Khan', height: 115, weight: 21, blood: 'AB+', problem: '' },
+                { uid: 'CH005', name: 'Riya Das', height: 110, weight: 19, blood: 'O-', problem: '' }
+            ];
+        }
+        function setPatients(patients) {
+            localStorage.setItem('patients', JSON.stringify(patients));
+        }
+        let patients = getPatients();
+        function renderTable() {
+            const tbody = document.querySelector('#patientsTable tbody');
+            tbody.innerHTML = '';
+            patients.forEach((p, idx) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.uid}</td>
+                        <td>${p.name}</td>
+                        <td>${p.height}</td>
+                        <td>${p.weight}</td>
+                        <td><span class='blood-group'>${p.blood}</span></td>
+                        <td>${p.problem ? p.problem : '<span style=\'color:#888\'>-</span>'}</td>
+                        <td>${p.diet ? p.diet : '<span style=\'color:#888\'>-</span>'}</td>
+                        <td>${p.messages ? p.messages : '<span style=\'color:#888\'>-</span>'}</td>
+                        <td><button class='edit-btn' onclick='openEditModal(${idx})'>Edit</button></td>
+                    </tr>
+                `;
+            });
+        }
+        function openEditModal(idx) {
+            const p = patients[idx];
+            document.getElementById('editUid').value = p.uid;
+            document.getElementById('editName').value = p.name;
+            document.getElementById('editHeight').value = p.height;
+            document.getElementById('editWeight').value = p.weight;
+            document.getElementById('editBlood').value = p.blood;
+            document.getElementById('editProblem').value = p.problem;
+            document.getElementById('editDiet').value = p.diet || '';
+            document.getElementById('editMessages').value = p.messages || '';
+            document.getElementById('editModal').style.display = 'flex';
+        }
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+        function saveEdit(e) {
+            e.preventDefault();
+            const uid = document.getElementById('editUid').value;
+            const name = document.getElementById('editName').value;
+            const height = parseInt(document.getElementById('editHeight').value);
+            const weight = parseInt(document.getElementById('editWeight').value);
+            const blood = document.getElementById('editBlood').value;
+            const problem = document.getElementById('editProblem').value;
+            const diet = document.getElementById('editDiet').value;
+            const messages = document.getElementById('editMessages').value;
+            const idx = patients.findIndex(p => p.uid === uid);
+            if (idx !== -1) {
+                patients[idx] = { uid, name, height, weight, blood, problem, diet, messages };
+                setPatients(patients);
+                renderTable();
+                closeEditModal();
+            }
+            return false;
+        }
+        function logout() {
+            window.location.href = 'login.html';
+        }
+        // Initial render
+        renderTable();
+    </script>
+</body>
+</html> 

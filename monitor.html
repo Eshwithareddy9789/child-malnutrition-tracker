@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child Monitoring - Malnutrition Tracking System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #006B54;
+            --secondary-color: #4CAF50;
+            --background-color: #f5f5f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+        }
+
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 1rem;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-weight: bold;
+        }
+
+        .monitoring-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .metric-input {
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .save-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .save-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .status-indicator {
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .status-normal {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-warning {
+            background: #FFC107;
+            color: black;
+        }
+
+        .status-danger {
+            background: #DC3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="home.html">Child Malnutrition Tracking & Prevention System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="home.html"><i class="fas fa-home"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="login.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Growth Monitoring Form -->
+            <div class="col-md-6">
+                <div class="monitoring-card">
+                    <div class="card-header">
+                        <h4>Record Growth Measurements</h4>
+                    </div>
+                    <form id="growthForm">
+                        <div class="metric-input">
+                            <label for="weight" class="form-label">Weight (kg)</label>
+                            <input type="number" class="form-control" id="weight" step="0.1" required>
+                        </div>
+                        <div class="metric-input">
+                            <label for="height" class="form-label">Height (cm)</label>
+                            <input type="number" class="form-control" id="height" step="0.1" required>
+                        </div>
+                        <div class="metric-input">
+                            <label for="age" class="form-label">Age (months)</label>
+                            <input type="number" class="form-control" id="age" required>
+                        </div>
+                        <div class="metric-input">
+                            <label for="measurementDate" class="form-label">Date of Measurement</label>
+                            <input type="date" class="form-control" id="measurementDate" required>
+                        </div>
+                        <button type="submit" class="save-button">Save Measurements</button>
+                    </form>
+                    <div id="nutritionStatus" class="status-indicator">
+                        <!-- Status will be updated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Growth Charts -->
+            <div class="col-md-6">
+                <div class="monitoring-card">
+                    <div class="card-header">
+                        <h4>Growth Charts</h4>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="weightChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="heightChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Initialize Charts
+        function initializeCharts() {
+            const weightCtx = document.getElementById('weightChart').getContext('2d');
+            const heightCtx = document.getElementById('heightChart').getContext('2d');
+
+            // Weight Chart
+            new Chart(weightCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Weight (kg)',
+                        data: [19, 19.2, 19.5, 19.8, 20, 20.2],
+                        borderColor: '#006B54',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Height Chart
+            new Chart(heightCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Height (cm)',
+                        data: [108, 108.5, 109, 109.5, 110, 110.5],
+                        borderColor: '#4CAF50',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Calculate BMI and determine nutrition status
+        function calculateNutritionStatus(weight, height) {
+            const heightInMeters = height / 100;
+            const bmi = weight / (heightInMeters * heightInMeters);
+            const statusDiv = document.getElementById('nutritionStatus');
+            
+            if (bmi < 16) {
+                statusDiv.className = 'status-indicator status-danger';
+                statusDiv.textContent = 'Severe Malnutrition Risk';
+            } else if (bmi < 18.5) {
+                statusDiv.className = 'status-indicator status-warning';
+                statusDiv.textContent = 'Moderate Malnutrition Risk';
+            } else if (bmi < 25) {
+                statusDiv.className = 'status-indicator status-normal';
+                statusDiv.textContent = 'Normal Nutritional Status';
+            } else {
+                statusDiv.className = 'status-indicator status-warning';
+                statusDiv.textContent = 'Overweight Risk';
+            }
+        }
+
+        // Form submission handler
+        document.getElementById('growthForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            
+            calculateNutritionStatus(weight, height);
+            // Here you would typically save the data to your backend
+            alert('Measurements saved successfully!');
+        });
+
+        // Initialize charts when page loads
+        window.onload = initializeCharts;
+    </script>
+</body>
+</html> 
